@@ -1,0 +1,261 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<button type="button" id="btnadd" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+    Add
+</button>
+
+<div class="row">
+    <div class="col-md-12">
+        <table id="tbl" class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>
+                        Id
+                    </th>
+                    <th>
+                        Catagory Name
+                    </th>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Option
+                    </th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Input Field</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="pid" hidden />
+                <div>
+                    Catagory Name: <select id="ddlcat" class="form-control">
+                    <option>Select Catagory</option>
+                    </select>
+
+                </div>
+                <div>
+                  Product Name: <input id="nam" type="text" class="form-control" />
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <input type="button" class="btn btn-primary" data-dismiss="modal" value="save" id="btnsave" />
+                <input type="button" class="btn btn-primary" data-dismiss="modal" value="Update" id="btnupdate" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Show Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+               
+               <div>
+                   <ul>
+                       <li>
+                           Product ID:<label id="pidd"></label>
+                       </li>
+                       <li>
+                           Product Name:<label id="pnamed"></label>
+                       </li>
+                       <li>
+                           Catagory Name:<label id="caname"></label>
+                       </li>
+                   </ul>
+               </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                @*<input type="button" class="btn btn-primary" data-dismiss="modal" value="save" id="btnsave" />
+                <input type="button" class="btn btn-primary" data-dismiss="modal" value="Update" id="btnupdate" />*@
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            show();
+            CatShow();
+         
+
+            $("#btnsave").click(function () {
+
+                Save();
+            })
+            $("#btnupdate").click(function () {
+
+                UpdateData();
+            })
+            $("#btnadd").click(function () {
+                clear();
+                $("#btnsave").show();
+                $("#btnupdate").hide();
+            })
+        })
+
+        function show() {
+            $.ajax({
+                url: "Products/AllProduct",
+                type: "Get",
+                dataType: "json",
+                contentType: "application/json"
+            }).done(function (data) {
+                //console.log(data);
+                $("#tbl tbody").empty();
+                $.each(data, function (i, v) {
+                    $("#tbl tbody").append(
+                        "<tr><td>" + v.PId + "</td><td>" + v.CatName + "</td><td>" + v.PName+"</td><td>"+
+                        "<input type='button' value='Edit' onclick='getbyId(" + v.PId + ")' data-toggle='modal' data-target='#exampleModalCenter' />|| <input type='button' value='Delete' onclick='Delete(" + v.PId + ")' />|| <input type='button' value='Details' onclick='Detailsprd(" + v.PId + ")' data-toggle='modal' data-target='#exampleModal' />" + "</td></tr>"
+                    )
+
+                })
+
+            })
+        }
+
+        function Detailsprd(id) {
+            $.ajax({
+                url: "Products/Details/"+id,
+                type: "Get",
+                dataType: "json",
+                contentType: "application/json"
+            }).done(function (data) {
+                console.log(data);
+                $("#pidd").text("");
+                $("#pnamed").text("");
+                $("#caname").text("");
+                $.each(data, function (i, v) {
+                    $("#pidd").text(v.PId);
+                    $("#pnamed").text(v.PName);
+                    $("#caname").text(v.CatName);
+
+                })
+
+            })
+        }
+        function Save() {
+            var data = {
+                CatagoryId: $("#ddlcat").val(),
+                PName: $("#nam").val()
+            }
+            $.ajax({
+                url: "Products/Create",
+                type: "Post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json"
+            }).done(function (data) {
+                //console.log(data);
+                alert("Save Success")
+                clear();
+                show()
+
+            })
+        }
+
+        function CatShow() {
+            $.ajax({
+                url: "Products/allcatagory",
+                type: "Get",
+                dataType: "json",
+                contentType: "application/json"
+            }).done(function (data) {
+                //console.log(data);
+                $.each(data, function (i, v) {
+
+                    $("#ddlcat").append("<option value=" + v.CatagoryId + ">" + v.CName + "</option>")
+                })
+               
+            })
+        }
+
+        function getbyId(PId) {
+            $("#btnsave").hide();
+            $("#btnupdate").show();
+            $.ajax({
+                url: "Products/GEtbyId?id=" + PId,
+                type: "Get",
+                dataType: "json",
+                contentType: "application/json"
+            }).done(function (data) {
+                console.log(data);
+                $.each(data, function (i, v) {
+                    $("#ddlcat").val(v.CName);
+                    $("#nam").val(v.PName);
+                    $("#pid").val(v.ProductId);
+                })
+            })
+        }
+        function UpdateData() {
+            var data = {
+                CatagoryId: $("#ddlcat").val(),
+                PName: $("#nam").val(),
+                ProductId: $("#pid").val()
+            }
+            $.ajax({
+                url: "Products/Update",
+                type: "Post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json"
+            }).done(function (variable) {
+                alert("Update Success")
+                clear();
+                show();
+                //console.log(data);
+            })
+        }
+
+
+        function Delete(PId) {
+            alert("Yes");
+            $.ajax({
+                url: "Products/DeleteConfirmed?id=" + PId,
+                type: "Post",
+                dataType: "json",
+                contentType: "application/json"
+            }).done(function (data) {
+                show();
+            })
+        }
+
+        function clear() {
+            $("#nam").val("");
+            $("#cid").val("");
+        }
+
+
+
+        "<tr><td>"++"</td><td>"++"</td></tr>"
+    </script>
+
+
+}

@@ -1,0 +1,173 @@
+﻿
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<button type="button" id="btnadd" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+    Add
+</button>
+
+<div class="row">
+    <div class="col-md-12">
+        <table id="tbl" class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>
+                        Id
+                    </th>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Option
+                    </th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Input Field</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="cid" hidden />
+                <div>
+                    Name: <input id="nam" type="text" class="form-control"/>
+                   
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <input type="button" class="btn btn-primary" data-dismiss="modal" value="save" id="btnsave" />
+                <input type="button" class="btn btn-primary" data-dismiss="modal" value="Update" id="btnupdate" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            show();
+           
+            $("#btnsave").click(function () {
+
+                Save();
+            })
+            $("#btnupdate").click(function () {
+
+                UpdateData();
+            })
+            $("#btnadd").click(function () {
+                clear();
+                $("#btnsave").show();
+                $("#btnupdate").hide();
+            })
+        })
+        
+        function show() {
+            $.ajax({
+                url: "Catagories/allcatagory",
+                type: "Get",
+                dataType: "json",
+                contentType: "application/json"
+            }).done(function (data) {
+                //console.log(data);
+                $("#tbl tbody").empty();
+                $.each(data, function (i, v) {
+                    $("#tbl tbody").append(
+                        "<tr><td>" + v.CatagoryId + "</td><td>" + v.CName + "</td><td>" +
+                        "<input type='button' value='Edit' onclick='getbyId(" + v.CatagoryId + ")' data-toggle='modal' data-target='#exampleModalCenter' />|| <input type='button' value='Delete' onclick='Delete(" + v.CatagoryId +")' />"+"</td></tr>"
+                    )
+
+                })
+
+            })
+        }
+        function Save() {
+            var data = {
+                CName: $("#nam").val()
+            }
+            $.ajax({
+                url: "Catagories/Create",
+                type: "Post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json"
+            }).done(function (data) {
+                console.log(data);
+                alert("Save Success")
+                clear();
+                show()
+
+            })
+        }
+
+        function getbyId(id) {
+            $("#btnsave").hide();
+            $("#btnupdate").show();
+            $.ajax({
+                url: "Catagories/GEtbyId?id=" + id,
+                type: "Get",
+                dataType: "json",
+                contentType: "application/json"
+            }).done(function (data) {
+                //console.log(data);
+                $("#nam").val("");
+                $("#cid").val("");
+                $("#nam").val(data.CName);
+                $("#cid").val(data.CatagoryId);
+            })
+        }
+        function UpdateData(id) {
+            var data = {
+                CName: $("#nam").val(),
+                CatagoryId: $("#cid").val()
+            }
+            $.ajax({
+                url: "Catagories/Update",
+                type: "Post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json"
+            }).done(function (data) {
+                alert("Update Success")
+                clear();
+                show();
+                 //console.log(data);
+            })
+        }
+
+
+        function Delete(id) {
+            alert("Yes");
+            $.ajax({
+                url: "Catagories/DeleteConfirmed?id=" + id,
+                type: "Post",
+                dataType: "json",
+                contentType: "application/json"
+            }).done(function (data) {
+                console.log(data);
+                show();
+            })
+        }
+
+        function clear() {
+            $("#nam").val("");
+            $("#cid").val("");
+        }
+        
+    </script>
+
+
+}
